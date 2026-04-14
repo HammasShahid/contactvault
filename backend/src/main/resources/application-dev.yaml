@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/contactvault?createDatabaseIfNotExist=true
+    username: root
+    password: hash,174
+
+  jpa:
+    show-sql: true

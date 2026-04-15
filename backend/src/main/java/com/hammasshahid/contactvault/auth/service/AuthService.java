@@ -1,5 +1,6 @@
 package com.hammasshahid.contactvault.auth.service;
 
+import com.hammasshahid.contactvault.common.exception.BadRequestException;
 import com.hammasshahid.contactvault.user.dto.RegisterRequest;
 import com.hammasshahid.contactvault.user.dto.UserResponse;
 import com.hammasshahid.contactvault.user.entity.User;
@@ -19,8 +20,8 @@ public class AuthService {
     public UserResponse register(RegisterRequest request) {
         boolean isPresent = userRepository.findByEmail(request.getEmail()).isPresent();
 
-        // TODO: handle in global exception handler
-        if (isPresent) throw new RuntimeException("Email already exists");
+        if (isPresent)
+            throw new BadRequestException("Email already exists");
 
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));

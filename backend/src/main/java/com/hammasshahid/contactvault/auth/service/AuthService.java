@@ -3,6 +3,7 @@ package com.hammasshahid.contactvault.auth.service;
 import com.hammasshahid.contactvault.user.dto.RegisterRequest;
 import com.hammasshahid.contactvault.user.dto.UserResponse;
 import com.hammasshahid.contactvault.user.entity.User;
+import com.hammasshahid.contactvault.user.mapper.UserMapper;
 import com.hammasshahid.contactvault.user.repository.UserRepository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     public UserResponse register(RegisterRequest request) {
         boolean isPresent = userRepository.findByEmail(request.getEmail()).isPresent();
@@ -20,14 +22,11 @@ public class AuthService {
         // TODO: handle in global exception handler
         if (isPresent) throw new RuntimeException("Email already exists");
 
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
+        User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         userRepository.save(user);
 
-        return new UserResponse(user.getId(), user.getFirstName(), user.getLastName(), user.getEmail());
+        return userMapper.toResponse(user);
     }
 }

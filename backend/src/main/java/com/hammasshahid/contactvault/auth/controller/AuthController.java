@@ -23,7 +23,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request, UriComponentsBuilder uriComponentsBuilder) {
         UserResponse userResponse = authService.register(request);
-        URI uri = uriComponentsBuilder.buildAndExpand("/api/v1/users/{id}", userResponse.getId()).toUri();
+        URI uri = uriComponentsBuilder.path("/api/v1/users/{id}").buildAndExpand(userResponse.getId()).toUri();
 
         return ResponseEntity.created(uri).body(userResponse);
     }

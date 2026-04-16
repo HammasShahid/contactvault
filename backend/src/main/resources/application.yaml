@@ -10,3 +10,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
+  jwt:
+    accessTokenExpirationMillis: 3600000 # 2 Hours
+    secret: my-secret-my-secret-my-secret-my-secret

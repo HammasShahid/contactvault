@@ -26,10 +26,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(c -> c
                         .requestMatchers(HttpMethod.POST, "/api/*/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/*/auth/login").permitAll()
                         .anyRequest().authenticated()
                 );
 
         return httpSecurity.build();
-
     }
 }

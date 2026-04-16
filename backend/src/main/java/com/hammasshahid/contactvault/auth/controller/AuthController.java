@@ -1,5 +1,7 @@
 package com.hammasshahid.contactvault.auth.controller;
 
+import com.hammasshahid.contactvault.auth.dto.LoginRequest;
+import com.hammasshahid.contactvault.auth.dto.LoginResponse;
 import com.hammasshahid.contactvault.auth.service.AuthService;
 import com.hammasshahid.contactvault.user.dto.RegisterRequest;
 import com.hammasshahid.contactvault.user.dto.UserResponse;
@@ -26,5 +28,10 @@ public class AuthController {
         URI uri = uriComponentsBuilder.path("/api/v1/users/{id}").buildAndExpand(userResponse.getId()).toUri();
 
         return ResponseEntity.created(uri).body(userResponse);
+    }
+
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 }

@@ -3,6 +3,7 @@ package com.hammasshahid.contactvault.auth.service;
 import com.hammasshahid.contactvault.auth.config.JwtConfig;
 import com.hammasshahid.contactvault.auth.helper.Jwt;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,5 +23,19 @@ public class JwtService {
                 .build();
 
         return new Jwt(claims, jwtConfig.getSecretKey());
+    }
+
+    public Jwt parseToken(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith(jwtConfig.getSecretKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return new Jwt(claims, jwtConfig.getSecretKey());
+        } catch (JwtException ex) {
+            return null;
+        }
     }
 }

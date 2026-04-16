@@ -16,6 +16,10 @@ public class Jwt {
         return claims.getExpiration().before(new Date());
     }
 
+    public String getSubject() {
+        return claims.getSubject();
+    }
+
     @Override
     public String toString() {
         return Jwts.builder()

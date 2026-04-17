@@ -58,4 +58,12 @@ public class AuthService {
 
         return userMapper.toResponse(user);
     }
+
+    public User getCurrentUser() {
+        String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (email == null)
+            throw new UnauthorizedException("User not authenticated");
+
+        return userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found."));
+    }
 }

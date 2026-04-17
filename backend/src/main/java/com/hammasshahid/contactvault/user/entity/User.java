@@ -1,9 +1,13 @@
 package com.hammasshahid.contactvault.user.entity;
 
+import com.hammasshahid.contactvault.contact.entity.Contact;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -29,4 +33,7 @@ public class User {
 
     @Column(name = "created_at", insertable = false, updatable = false, nullable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private Set<Contact> contacts = new HashSet<>();
 }

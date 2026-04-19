@@ -5,11 +5,9 @@ import com.hammasshahid.contactvault.contact.dto.ContactResponse;
 import com.hammasshahid.contactvault.contact.service.ContactService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
@@ -26,5 +24,10 @@ public class ContactController {
 
         URI uri = uriComponentsBuilder.path("/api/v1/contacts/{id}").buildAndExpand(response.getId()).toUri();
         return ResponseEntity.created(uri).body(response);
+    }
+
+    @GetMapping
+    public Page<ContactResponse> getAllByCurrentUser(@RequestParam int page, @RequestParam int size) {
+        return contactService.getAllByCurrentUser(page, size);
     }
 }

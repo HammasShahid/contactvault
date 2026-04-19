@@ -30,4 +30,9 @@ public class ContactController {
     public Page<ContactResponse> getAllByCurrentUser(@RequestParam int page, @RequestParam int size) {
         return contactService.getAllByCurrentUser(page, size);
     }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<ContactResponse> update(@PathVariable("id") Long id, @Valid @RequestBody ContactRequest request) {
+        return ResponseEntity.ok(contactService.update(id, request));
+    }
 }

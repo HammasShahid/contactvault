@@ -10,6 +10,9 @@ import com.hammasshahid.contactvault.contact.mapper.ContactMapper;
 import com.hammasshahid.contactvault.contact.repository.ContactRepository;
 import com.hammasshahid.contactvault.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -40,5 +43,14 @@ public class ContactService {
 
         contactRepository.save(contact);
         return contactMapper.toResponse(contact);
+    }
+
+    public Page<ContactResponse> getAllByCurrentUser(int page, int size) {
+        User currentUser = authService.getCurrentUser();
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Contact> contactPage = contactRepository.findByUser(currentUser, pageable);
+
+        return contactPage.map(contactMapper::toResponse);
     }
 }

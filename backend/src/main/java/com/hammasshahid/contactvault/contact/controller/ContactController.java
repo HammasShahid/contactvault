@@ -1,6 +1,6 @@
 package com.hammasshahid.contactvault.contact.controller;
 
-import com.hammasshahid.contactvault.contact.dto.ContactRequest;
+import com.hammasshahid.contactvault.contact.dto.CreateContactRequest;
 import com.hammasshahid.contactvault.contact.dto.ContactResponse;
 import com.hammasshahid.contactvault.contact.service.ContactService;
 import jakarta.validation.Valid;
@@ -19,7 +19,7 @@ public class ContactController {
     private final ContactService contactService;
 
     @PostMapping
-    public ResponseEntity<ContactResponse> create(@Valid @RequestBody ContactRequest request, UriComponentsBuilder uriComponentsBuilder) {
+    public ResponseEntity<ContactResponse> create(@Valid @RequestBody CreateContactRequest request, UriComponentsBuilder uriComponentsBuilder) {
         ContactResponse response = contactService.createContact(request);
 
         URI uri = uriComponentsBuilder.path("/api/v1/contacts/{id}").buildAndExpand(response.getId()).toUri();
@@ -32,7 +32,7 @@ public class ContactController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ContactResponse> update(@PathVariable("id") Long id, @Valid @RequestBody ContactRequest request) {
+    public ResponseEntity<ContactResponse> update(@PathVariable("id") Long id, @Valid @RequestBody CreateContactRequest request) {
         return ResponseEntity.ok(contactService.update(id, request));
     }
 }

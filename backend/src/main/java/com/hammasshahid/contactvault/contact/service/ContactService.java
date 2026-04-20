@@ -3,7 +3,7 @@ package com.hammasshahid.contactvault.contact.service;
 import com.hammasshahid.contactvault.auth.service.AuthService;
 import com.hammasshahid.contactvault.common.exception.NotFoundException;
 import com.hammasshahid.contactvault.common.exception.UnauthorizedException;
-import com.hammasshahid.contactvault.contact.dto.ContactRequest;
+import com.hammasshahid.contactvault.contact.dto.CreateContactRequest;
 import com.hammasshahid.contactvault.contact.dto.ContactResponse;
 import com.hammasshahid.contactvault.contact.entity.Contact;
 import com.hammasshahid.contactvault.contact.entity.ContactEmail;
@@ -25,7 +25,7 @@ public class ContactService {
     private final ContactRepository contactRepository;
     private final AuthService authService;
 
-    public ContactResponse createContact(ContactRequest request) {
+    public ContactResponse createContact(CreateContactRequest request) {
         User currentUser = authService.getCurrentUser();
 
         Contact contact = contactMapper.toEntity(request);
@@ -58,7 +58,7 @@ public class ContactService {
     }
 
     @Transactional
-    public ContactResponse update(Long id, ContactRequest request) {
+    public ContactResponse update(Long id, CreateContactRequest request) {
         Contact contact = contactRepository.findById(id).orElseThrow(() -> new NotFoundException("Contact not found."));
         if (!contact.getUser().getId().equals(authService.getCurrentUser().getId()))
             throw new UnauthorizedException("You are not authorized to perform that action.");

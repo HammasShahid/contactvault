@@ -1,8 +1,8 @@
 package com.hammasshahid.contactvault.contact.mapper;
 
-import com.hammasshahid.contactvault.contact.dto.ContactEmailRequest;
-import com.hammasshahid.contactvault.contact.dto.ContactPhoneRequest;
-import com.hammasshahid.contactvault.contact.dto.ContactRequest;
+import com.hammasshahid.contactvault.contact.dto.CreateContactEmailRequest;
+import com.hammasshahid.contactvault.contact.dto.CreateContactPhoneRequest;
+import com.hammasshahid.contactvault.contact.dto.CreateContactRequest;
 import com.hammasshahid.contactvault.contact.dto.ContactResponse;
 import com.hammasshahid.contactvault.contact.entity.Contact;
 import com.hammasshahid.contactvault.contact.entity.ContactEmail;
@@ -15,11 +15,11 @@ public interface ContactMapper {
 
     @Mapping(target = "emails", ignore = true)
     @Mapping(target = "phones", ignore = true)
-    Contact toEntity(ContactRequest request);
+    Contact toEntity(CreateContactRequest request);
 
-    ContactEmail toEmailEntity(ContactEmailRequest request);
+    ContactEmail toEmailEntity(CreateContactEmailRequest request);
 
-    ContactPhone toPhoneEntity(ContactPhoneRequest request);
+    ContactPhone toPhoneEntity(CreateContactPhoneRequest request);
 
     ContactResponse toResponse(Contact contact);
 }

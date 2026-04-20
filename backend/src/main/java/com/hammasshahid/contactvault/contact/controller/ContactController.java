@@ -2,6 +2,7 @@ package com.hammasshahid.contactvault.contact.controller;
 
 import com.hammasshahid.contactvault.contact.dto.CreateContactRequest;
 import com.hammasshahid.contactvault.contact.dto.ContactResponse;
+import com.hammasshahid.contactvault.contact.dto.UpdateContactRequest;
 import com.hammasshahid.contactvault.contact.service.ContactService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +33,7 @@ public class ContactController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ContactResponse> update(@PathVariable("id") Long id, @Valid @RequestBody CreateContactRequest request) {
+    public ResponseEntity<ContactResponse> update(@PathVariable("id") Long id, @Valid @RequestBody UpdateContactRequest request) {
         return ResponseEntity.ok(contactService.update(id, request));
     }
 }

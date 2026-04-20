@@ -2,6 +2,7 @@ package com.hammasshahid.contactvault.contact.service;
 
 import com.hammasshahid.contactvault.auth.service.AuthService;
 import com.hammasshahid.contactvault.common.exception.BadRequestException;
+import com.hammasshahid.contactvault.common.exception.ForbiddenException;
 import com.hammasshahid.contactvault.common.exception.NotFoundException;
 import com.hammasshahid.contactvault.common.exception.UnauthorizedException;
 import com.hammasshahid.contactvault.contact.dto.*;
@@ -11,6 +12,7 @@ import com.hammasshahid.contactvault.contact.entity.ContactPhone;
 import com.hammasshahid.contactvault.contact.mapper.ContactMapper;
 import com.hammasshahid.contactvault.contact.repository.ContactRepository;
 import com.hammasshahid.contactvault.user.entity.User;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -156,5 +158,15 @@ public class ContactService {
 
         // DELETE phones (orphanRemoval handles DB)
         contact.getPhones().removeIf(e -> !updated.contains(e));
+    }
+
+    public void deleteById(Long id) {
+        Contact contact = contactRepository.findById(id).orElseThrow(() -> new NotFoundException("Contact not found"));
+        User user = authService.getCurrentUser();
+
+        if (!contact.getUser().getId().equals(user.getId()))
+            throw new UnauthorizedException("You don't have permission to perform this action.");
+
+        contactRepository.delete(contact);
     }
 }

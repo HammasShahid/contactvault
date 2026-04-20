@@ -6,6 +6,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ContactPhoneResponse {
+    private Long id;
     private String phoneNumber;
     private String label;
 }

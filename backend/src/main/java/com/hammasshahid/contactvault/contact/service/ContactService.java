@@ -12,6 +12,7 @@ import com.hammasshahid.contactvault.contact.mapper.ContactMapper;
 import com.hammasshahid.contactvault.contact.repository.ContactRepository;
 import com.hammasshahid.contactvault.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ContactService {
     private final ContactMapper contactMapper;
     private final ContactRepository contactRepository;
@@ -32,6 +34,7 @@ public class ContactService {
 
     public ContactResponse createContact(CreateContactRequest request) {
         User currentUser = authService.getCurrentUser();
+        log.info("Attempting to create contact for user {}", currentUser.getId());
 
         Contact contact = contactMapper.toEntity(request);
         contact.setUser(currentUser);
@@ -50,11 +53,14 @@ public class ContactService {
         }
 
         contactRepository.save(contact);
+        log.info("Contact {} created for user {}", contact.getId(), currentUser.getId());
         return contactMapper.toResponse(contact);
     }
 
     public Page<ContactResponse> getAllByCurrentUser(int page, int size) {
         User currentUser = authService.getCurrentUser();
+
+        log.info("Fetching contacts for user {}, page={}, size={}", currentUser.getId(), page, size);
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Contact> contactPage = contactRepository.findByUser(currentUser, pageable);
@@ -63,9 +69,18 @@ public class ContactService {
     }
 
     public ContactResponse update(Long id, UpdateContactRequest request) {
-        Contact contact = contactRepository.findById(id).orElseThrow(() -> new NotFoundException("Contact not found."));
-        if (!contact.getUser().getId().equals(authService.getCurrentUser().getId()))
+        log.info("Attempting to update contact with id {}", id);
+
+        Contact contact = contactRepository.findById(id).orElseThrow(() -> {
+            log.warn("Contact with id {} does not exist", id);
+            return new NotFoundException("Contact not found.");
+        });
+
+        User currentUser = authService.getCurrentUser();
+        if (!contact.getUser().getId().equals(currentUser.getId())) {
+            log.warn("User {} attempted unauthorized update on contact {}", currentUser.getId(), id);
             throw new ForbiddenException("You don't have permission to perform this action.");
+        }
         contact.setTitle(request.getTitle());
         contact.setFirstName(request.getFirstName());
         contact.setLastName(request.getLastName());
@@ -74,6 +89,8 @@ public class ContactService {
         syncPhones(contact, request.getPhones());
 
         contactRepository.save(contact);
+
+        log.info("Contact with id {} was successfully updated by user {}", id, currentUser.getId());
         return contactMapper.toResponse(contact);
     }
 
@@ -98,6 +115,7 @@ public class ContactService {
                 if (request.getId() != null) {
 
                     if (!existing.containsKey(request.getId())) {
+                        log.warn("Invalid email id {} for contact {}", request.getId(), contact.getId());
                         throw new BadRequestException("Invalid email ID '" + request.getId() + "' for this contact");
                     }
                     ContactEmail email = existing.get(request.getId());
@@ -139,6 +157,7 @@ public class ContactService {
                 if (request.getId() != null) {
 
                     if (!existing.containsKey(request.getId())) {
+                        log.warn("Invalid phone id {} for contact {}", request.getId(), contact.getId());
                         throw new BadRequestException("Invalid phone ID '" + request.getId() + "' for this contact");
                     }
                     ContactPhone phone = existing.get(request.getId());
@@ -159,12 +178,20 @@ public class ContactService {
     }
 
     public void deleteById(Long id) {
-        Contact contact = contactRepository.findById(id).orElseThrow(() -> new NotFoundException("Contact not found"));
+        log.info("Attempting to delete contact with id {}", id);
+
+        Contact contact = contactRepository.findById(id).orElseThrow(() -> {
+            log.warn("Contact with id {} not found", id);
+            return new NotFoundException("Contact not found");
+        });
         User user = authService.getCurrentUser();
 
-        if (!contact.getUser().getId().equals(user.getId()))
+        if (!contact.getUser().getId().equals(user.getId())) {
+            log.warn("User {} attempted unauthorized delete on contact {}", user.getId(), id);
             throw new ForbiddenException("You don't have permission to perform this action.");
+        }
 
         contactRepository.delete(contact);
+        log.info("Contact with id {} was successfully deleted by user {}", id, user.getId());
     }
 }

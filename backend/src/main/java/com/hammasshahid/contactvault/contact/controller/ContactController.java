@@ -19,6 +19,12 @@ import java.net.URI;
 public class ContactController {
     private final ContactService contactService;
 
+    @GetMapping("/{id}")
+    public ContactResponse get(@PathVariable Long id) {
+        return contactService.getById(id);
+    }
+
+
     @PostMapping
     public ResponseEntity<ContactResponse> create(@Valid @RequestBody CreateContactRequest request, UriComponentsBuilder uriComponentsBuilder) {
         ContactResponse response = contactService.createContact(request);

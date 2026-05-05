@@ -194,4 +194,17 @@ public class ContactService {
         contactRepository.delete(contact);
         log.info("Contact with id {} was successfully deleted by user {}", id, user.getId());
     }
+
+    public ContactResponse getById(Long id) {
+        User currentUser = authService.getCurrentUser();
+
+        log.info("Attempting to fetch contact with id {} for user {}", id, currentUser.getId());
+        Contact contact = contactRepository.findByIdAndUserId(id, currentUser.getId()).orElseThrow(() -> {
+            log.warn("contact with id {} not found for user {}", id, currentUser.getId());
+            return new NotFoundException("Contact not found");
+        });
+
+        log.info("Successfully fetched contact {} for user {}", id, currentUser.getId());
+        return contactMapper.toResponse(contact);
+    }
 }

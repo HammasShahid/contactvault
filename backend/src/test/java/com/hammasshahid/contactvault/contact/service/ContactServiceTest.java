@@ -1,6 +1,7 @@
 package com.hammasshahid.contactvault.contact.service;
 
 import com.hammasshahid.contactvault.auth.service.AuthService;
+import com.hammasshahid.contactvault.common.exception.BadRequestException;
 import com.hammasshahid.contactvault.common.exception.ForbiddenException;
 import com.hammasshahid.contactvault.common.exception.NotFoundException;
 import com.hammasshahid.contactvault.contact.dto.*;
@@ -21,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -204,6 +206,311 @@ class ContactServiceTest {
             assertEquals("You don't have permission to perform this action.", exception.getMessage());
 
             verify(contactRepository, never()).delete(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Update contact tests")
+    class UpdateContactTests {
+
+        private UpdateContactRequest buildUpdateRequest(
+                String firstName, String lastName, String title,
+                List<UpdateContactEmailRequest> emails,
+                List<UpdateContactPhoneRequest> phones) {
+
+            UpdateContactRequest request = new UpdateContactRequest();
+            request.setFirstName(firstName);
+            request.setLastName(lastName);
+            request.setTitle(title);
+            request.setEmails(emails);
+            request.setPhones(phones);
+            return request;
+        }
+
+        @Test
+        @DisplayName("Should update contact fields successfully when user is owner")
+        void update_shouldUpdateContactFields_whenUserIsOwner() {
+            // Arrange
+            UpdateContactRequest request = buildUpdateRequest(
+                    "UpdatedFirst", "UpdatedLast", "Dr.", null, null);
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactRepository.save(testContact)).thenReturn(testContact);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            // Act
+            ContactResponse result = contactService.update(TEST_CONTACT_ID, request);
+
+            // Assert
+            assertEquals("UpdatedFirst", testContact.getFirstName());
+            assertEquals("UpdatedLast", testContact.getLastName());
+            assertEquals("Dr.", testContact.getTitle());
+
+            assertNotNull(result);
+            verify(contactRepository).save(testContact);
+            verify(contactMapper).toResponse(testContact);
+        }
+
+        @Test
+        @DisplayName("Should throw NotFoundException when contact does not exist")
+        void update_shouldThrowNotFound_whenContactDoesNotExist() {
+            // Arrange
+            UpdateContactRequest request = buildUpdateRequest("A", "B", null, null, null);
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.empty());
+
+            // Act + Assert
+            NotFoundException exception = assertThrows(NotFoundException.class,
+                    () -> contactService.update(TEST_CONTACT_ID, request));
+
+            assertEquals("Contact not found.", exception.getMessage());
+
+            verify(contactRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should throw ForbiddenException when user is not the owner")
+        void update_shouldThrowForbidden_whenUserIsNotOwner() {
+            // Arrange
+            UpdateContactRequest request = buildUpdateRequest("A", "B", null, null, null);
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testOtherUser);
+
+            // Act + Assert
+            ForbiddenException exception = assertThrows(ForbiddenException.class,
+                    () -> contactService.update(TEST_CONTACT_ID, request));
+
+            assertEquals("You don't have permission to perform this action.", exception.getMessage());
+
+            verify(contactRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should update existing email when request contains valid email id")
+        void update_shouldUpdateExistingEmail_whenRequestContainsValidEmailId() {
+            // Arrange
+            UpdateContactEmailRequest emailRequest = new UpdateContactEmailRequest();
+            emailRequest.setId(1L);  // matches testEmail id set in setUp()
+            emailRequest.setEmail("updated@xyz.com");
+            emailRequest.setLabel("personal");
+
+            UpdateContactRequest request = buildUpdateRequest(
+                    "Babar", "Azam", null, List.of(emailRequest), null);
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            // Act
+            contactService.update(TEST_CONTACT_ID, request);
+
+            // Assert
+            ContactEmail updatedEmail = testContact.getEmails().stream()
+                    .filter(e -> Objects.equals(e.getId(), 1L))
+
+                    .findFirst()
+                    .orElseThrow();
+
+            assertEquals("updated@xyz.com", updatedEmail.getEmail());
+            assertEquals("personal", updatedEmail.getLabel());
+            verify(contactRepository).save(testContact);
+        }
+
+        @Test
+        @DisplayName("Should add new email when request email has no id")
+        void update_shouldAddNewEmail_whenRequestEmailHasNoId() {
+            // Arrange
+
+            // Keep the existing email (id=1L) in the request so it is not deleted
+            UpdateContactEmailRequest existingEmailRequest = new UpdateContactEmailRequest();
+            existingEmailRequest.setId(1L);
+            existingEmailRequest.setEmail("babar@xyz.com");
+            existingEmailRequest.setLabel("work");
+
+            UpdateContactEmailRequest newEmailRequest = new UpdateContactEmailRequest();
+            newEmailRequest.setId(null);  // no id = new email
+            newEmailRequest.setEmail("newmail@xyz.com");
+            newEmailRequest.setLabel("work");
+
+            ContactEmail newEmail = new ContactEmail();
+            newEmail.setEmail("newmail@xyz.com");
+            newEmail.setLabel("work");
+
+            UpdateContactRequest request = buildUpdateRequest(
+                    "Babar", "Azam", null, List.of(existingEmailRequest, newEmailRequest), null);
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactMapper.toEmailEntity(newEmailRequest)).thenReturn(newEmail);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            int emailCountBefore = testContact.getEmails().size();
+
+            // Act
+            contactService.update(TEST_CONTACT_ID, request);
+
+            // Assert
+            assertEquals(emailCountBefore + 1, testContact.getEmails().size());
+            assertTrue(testContact.getEmails().contains(newEmail));
+            verify(contactRepository).save(testContact);
+        }
+
+        @Test
+        @DisplayName("Should delete email when it is absent from update request")
+        void update_shouldDeleteEmail_whenAbsentFromRequest() {
+            // Arrange - send empty email list, so existing testEmail gets removed
+            UpdateContactRequest request = buildUpdateRequest(
+                    "Babar", "Azam", null, List.of(), null);
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            // Act
+            contactService.update(TEST_CONTACT_ID, request);
+
+            // Assert
+            assertTrue(testContact.getEmails().isEmpty());
+            verify(contactRepository).save(testContact);
+        }
+
+        @Test
+        @DisplayName("Should throw BadRequestException when email id does not belong to contact")
+        void update_shouldThrowBadRequest_whenEmailIdDoesNotBelongToContact() {
+            // Arrange
+            UpdateContactEmailRequest emailRequest = new UpdateContactEmailRequest();
+            emailRequest.setId(999L);  // invalid id, not in testContact's emails
+            emailRequest.setEmail("x@xyz.com");
+            emailRequest.setLabel("work");
+
+            UpdateContactRequest request = buildUpdateRequest(
+                    "Babar", "Azam", null, List.of(emailRequest), null);
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testUser);
+
+            // Act + Assert
+            BadRequestException exception = assertThrows(BadRequestException.class,
+                    () -> contactService.update(TEST_CONTACT_ID, request));
+
+            assertEquals("Invalid email ID '999' for this contact", exception.getMessage());
+
+            verify(contactRepository, never()).save(any());
+        }
+
+        @Test
+        @DisplayName("Should add new phone when request phone has no id")
+        void update_shouldAddNewPhone_whenRequestPhoneHasNoId() {
+            // Arrange
+
+            // Keep the existing phone (id=1L) in the request so it is not deleted
+            UpdateContactPhoneRequest existingPhoneRequest = new UpdateContactPhoneRequest();
+            existingPhoneRequest.setId(1L);
+            existingPhoneRequest.setPhoneNumber("03123456789");
+            existingPhoneRequest.setLabel("personal");
+
+            UpdateContactPhoneRequest newPhoneRequest = new UpdateContactPhoneRequest();
+            newPhoneRequest.setId(null);  // no id = new phone
+            newPhoneRequest.setPhoneNumber("03001234567");
+            newPhoneRequest.setLabel("home");
+
+            ContactPhone newPhone = new ContactPhone();
+            newPhone.setPhoneNumber("03001234567");
+            newPhone.setLabel("home");
+
+            UpdateContactRequest request = buildUpdateRequest(
+                    "Babar", "Azam", null, null, List.of(existingPhoneRequest, newPhoneRequest));
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactMapper.toPhoneEntity(newPhoneRequest)).thenReturn(newPhone);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            int phoneCountBefore = testContact.getPhones().size();
+
+            // Act
+            contactService.update(TEST_CONTACT_ID, request);
+
+            // Assert
+            assertEquals(phoneCountBefore + 1, testContact.getPhones().size());
+            assertTrue(testContact.getPhones().contains(newPhone));
+            verify(contactRepository).save(testContact);
+        }
+
+
+        @Test
+        @DisplayName("Should delete phone when it is absent from update request")
+        void update_shouldDeletePhone_whenAbsentFromRequest() {
+            // Arrange - send empty phone list, so existing testPhone gets removed
+            UpdateContactRequest request = buildUpdateRequest(
+                    "Babar", "Azam", null, null, List.of());
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            // Act
+            contactService.update(TEST_CONTACT_ID, request);
+
+            // Assert
+            assertTrue(testContact.getPhones().isEmpty());
+            verify(contactRepository).save(testContact);
+        }
+
+        @Test
+        @DisplayName("Should update existing phone when request contains valid phone id")
+        void update_shouldUpdateExistingPhone_whenRequestContainsValidPhoneId() {
+            // Arrange
+            UpdateContactPhoneRequest phoneRequest = new UpdateContactPhoneRequest();
+            phoneRequest.setId(1L);  // matches testPhone id set in setUp()
+            phoneRequest.setPhoneNumber("03001234567");
+            phoneRequest.setLabel("home");
+
+            UpdateContactRequest request = buildUpdateRequest(
+                    "Babar", "Azam", null, null, List.of(phoneRequest));
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            // Act
+            contactService.update(TEST_CONTACT_ID, request);
+
+            // Assert
+            ContactPhone updatedPhone = testContact.getPhones().stream()
+                    .filter(p -> p.getId().equals(1L))
+                    .findFirst()
+                    .orElseThrow();
+
+            assertEquals("03001234567", updatedPhone.getPhoneNumber());
+            assertEquals("home", updatedPhone.getLabel());
+            verify(contactRepository).save(testContact);
+        }
+
+        @Test
+        @DisplayName("Should throw BadRequestException when phone id does not belong to contact")
+        void update_shouldThrowBadRequest_whenPhoneIdDoesNotBelongToContact() {
+            // Arrange
+            UpdateContactPhoneRequest phoneRequest = new UpdateContactPhoneRequest();
+            phoneRequest.setId(999L);  // invalid id
+            phoneRequest.setPhoneNumber("03001234567");
+            phoneRequest.setLabel("home");
+
+            UpdateContactRequest request = buildUpdateRequest(
+                    "Babar", "Azam", null, null, List.of(phoneRequest));
+
+            when(contactRepository.findById(TEST_CONTACT_ID)).thenReturn(Optional.of(testContact));
+            when(authService.getCurrentUser()).thenReturn(testUser);
+
+            // Act + Assert
+            BadRequestException exception = assertThrows(BadRequestException.class,
+                    () -> contactService.update(TEST_CONTACT_ID, request));
+
+            assertEquals("Invalid phone ID '999' for this contact", exception.getMessage());
+
+            verify(contactRepository, never()).save(any());
         }
     }
 }

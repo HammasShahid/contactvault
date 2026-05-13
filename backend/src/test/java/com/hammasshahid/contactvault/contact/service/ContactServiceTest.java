@@ -19,6 +19,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -206,6 +210,93 @@ class ContactServiceTest {
             assertEquals("You don't have permission to perform this action.", exception.getMessage());
 
             verify(contactRepository, never()).delete(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("Get all contacts by current user tests")
+    class GetAllByCurrentUserTests {
+
+        @Test
+        @DisplayName("Should return paginated contacts for current user")
+        void getAllByCurrentUser_shouldReturnPaginatedContacts_whenUserHasContacts() {
+            // Arrange
+            int page = 0;
+            int size = 10;
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Contact> contactPage = new PageImpl<>(List.of(testContact), pageable, 1);
+
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactRepository.findByUser(testUser, pageable)).thenReturn(contactPage);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            // Act
+            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(1, result.getTotalElements());
+            assertEquals(testContactResponse, result.getContent().get(0));
+            verify(contactRepository).findByUser(testUser, pageable);
+            verify(contactMapper).toResponse(testContact);
+        }
+
+        @Test
+        @DisplayName("Should return empty page when user has no contacts")
+        void getAllByCurrentUser_shouldReturnEmptyPage_whenUserHasNoContacts() {
+            // Arrange
+            int page = 0;
+            int size = 10;
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Contact> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactRepository.findByUser(testUser, pageable)).thenReturn(emptyPage);
+
+            // Act
+            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(0, result.getTotalElements());
+            assertTrue(result.getContent().isEmpty());
+            verify(contactRepository).findByUser(testUser, pageable);
+            verify(contactMapper, never()).toResponse(any());
+        }
+
+        @Test
+        @DisplayName("Should return correct page when requesting non-first page")
+        void getAllByCurrentUser_shouldReturnCorrectPage_whenRequestingNonFirstPage() {
+            // Arrange
+            int page = 1;
+            int size = 5;
+
+            Contact secondContact = new Contact();
+            secondContact.setId(2L);
+            secondContact.setUser(testUser);
+
+            ContactResponse secondContactResponse = new ContactResponse();
+            secondContactResponse.setId(2L);
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Contact> contactPage = new PageImpl<>(List.of(secondContact), pageable, 6);
+
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactRepository.findByUser(testUser, pageable)).thenReturn(contactPage);
+            when(contactMapper.toResponse(secondContact)).thenReturn(secondContactResponse);
+
+            // Act
+            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(6, result.getTotalElements());
+            assertEquals(2, result.getTotalPages());
+            assertEquals(1, result.getContent().size());
+            assertEquals(2L, result.getContent().get(0).getId());
+            verify(contactRepository).findByUser(testUser, pageable);
         }
     }
 

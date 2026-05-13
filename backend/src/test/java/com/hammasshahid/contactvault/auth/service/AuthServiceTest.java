@@ -1,6 +1,7 @@
 package com.hammasshahid.contactvault.auth.service;
 
 import com.hammasshahid.contactvault.auth.dto.LoginRequest;
+import com.hammasshahid.contactvault.common.exception.BadRequestException;
 import com.hammasshahid.contactvault.user.dto.RegisterRequest;
 import com.hammasshahid.contactvault.user.dto.UserResponse;
 import com.hammasshahid.contactvault.user.entity.User;
@@ -8,13 +9,19 @@ import com.hammasshahid.contactvault.user.mapper.UserMapper;
 import com.hammasshahid.contactvault.user.repository.UserRepository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @DisplayName("AuthService Unit Tests")
@@ -60,5 +67,71 @@ class AuthServiceTest {
         testLoginRequest = new LoginRequest();
         testLoginRequest.setEmail("babar@xyz.com");
         testLoginRequest.setPassword("password123");
+    }
+
+    @Nested
+    @DisplayName("Register tests")
+    class RegisterTests {
+
+        @Test
+        @DisplayName("Should register user successfully when email does not exist")
+        void register_shouldRegisterUser_whenEmailDoesNotExist() {
+            // Arrange
+            when(userRepository.findByEmail(testRegisterRequest.getEmail()))
+                    .thenReturn(Optional.empty());
+            when(userMapper.toEntity(testRegisterRequest)).thenReturn(testUser);
+            when(passwordEncoder.encode(testRegisterRequest.getPassword()))
+                    .thenReturn("encodedPassword");
+            when(userRepository.save(testUser)).thenReturn(testUser);
+            when(userMapper.toResponse(testUser)).thenReturn(testUserResponse);
+
+            // Act
+            UserResponse result = authService.register(testRegisterRequest);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(testUser.getId(), result.getId());
+            assertEquals(testUser.getEmail(), result.getEmail());
+            assertEquals("encodedPassword", testUser.getPassword());
+            verify(passwordEncoder).encode(testRegisterRequest.getPassword());
+            verify(userRepository).save(testUser);
+            verify(userMapper).toResponse(testUser);
+        }
+
+        @Test
+        @DisplayName("Should throw BadRequestException when email already exists")
+        void register_shouldThrowBadRequest_whenEmailAlreadyExists() {
+            // Arrange
+            when(userRepository.findByEmail(testRegisterRequest.getEmail()))
+                    .thenReturn(Optional.of(testUser));
+
+            // Act + Assert
+            BadRequestException exception = assertThrows(BadRequestException.class,
+                    () -> authService.register(testRegisterRequest));
+
+            assertEquals("Email already exists", exception.getMessage());
+            verify(userRepository, never()).save(any());
+            verify(userMapper, never()).toResponse(any());
+        }
+
+        @Test
+        @DisplayName("Should encode password before saving user")
+        void register_shouldEncodePassword_beforeSavingUser() {
+            // Arrange
+            when(userRepository.findByEmail(testRegisterRequest.getEmail()))
+                    .thenReturn(Optional.empty());
+            when(userMapper.toEntity(testRegisterRequest)).thenReturn(testUser);
+            when(passwordEncoder.encode(testRegisterRequest.getPassword()))
+                    .thenReturn("encodedPassword");
+            when(userMapper.toResponse(testUser)).thenReturn(testUserResponse);
+
+            // Act
+            authService.register(testRegisterRequest);
+
+            // Assert
+            InOrder inOrder = inOrder(passwordEncoder, userRepository);
+            inOrder.verify(passwordEncoder).encode(testRegisterRequest.getPassword());
+            inOrder.verify(userRepository).save(testUser);
+        }
     }
 }

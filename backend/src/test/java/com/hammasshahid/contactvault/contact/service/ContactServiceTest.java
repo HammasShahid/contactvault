@@ -301,6 +301,81 @@ class ContactServiceTest {
             verify(contactRepository).findByUser(testUser, pageable);
             verify(contactRepository, never()).searchByUser(any(), any(), any());
         }
+
+        @Test
+        @DisplayName("Should use searchByUser when query is provided")
+        void getAllByCurrentUser_shouldUseSearchByUser_whenQueryIsProvided() {
+            // Arrange
+            int page = 0;
+            int size = 10;
+            String query = "babar";
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Contact> contactPage = new PageImpl<>(List.of(testContact), pageable, 1);
+
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactRepository.searchByUser(testUser, query, pageable)).thenReturn(contactPage);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            // Act
+            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size, query);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(1, result.getTotalElements());
+            assertEquals(testContactResponse, result.getContent().get(0));
+            verify(contactRepository).searchByUser(testUser, query, pageable);
+            verify(contactRepository, never()).findByUser(any(), any());
+        }
+
+        @Test
+        @DisplayName("Should use findByUser when query is blank")
+        void getAllByCurrentUser_shouldUseFindByUser_whenQueryIsBlank() {
+            // Arrange
+            int page = 0;
+            int size = 10;
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Contact> contactPage = new PageImpl<>(List.of(testContact), pageable, 1);
+
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactRepository.findByUser(testUser, pageable)).thenReturn(contactPage);
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            // Act
+            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size, "   ");
+
+            // Assert
+            assertNotNull(result);
+            verify(contactRepository).findByUser(testUser, pageable);
+            verify(contactRepository, never()).searchByUser(any(), any(), any());
+        }
+
+        @Test
+        @DisplayName("Should return empty page when search query matches no contacts")
+        void getAllByCurrentUser_shouldReturnEmptyPage_whenQueryMatchesNoContacts() {
+            // Arrange
+            int page = 0;
+            int size = 10;
+            String query = "zzznomatch";
+
+            Pageable pageable = PageRequest.of(page, size);
+            Page<Contact> emptyPage = new PageImpl<>(List.of(), pageable, 0);
+
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactRepository.searchByUser(testUser, query, pageable)).thenReturn(emptyPage);
+
+            // Act
+            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size, query);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(0, result.getTotalElements());
+            assertTrue(result.getContent().isEmpty());
+            verify(contactRepository).searchByUser(testUser, query, pageable);
+            verify(contactRepository, never()).findByUser(any(), any());
+            verify(contactMapper, never()).toResponse(any());
+        }
     }
 
     @Nested

@@ -232,54 +232,15 @@ class ContactServiceTest {
             when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
 
             // Act
-            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size);
+            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size, null);
 
             // Assert
             assertNotNull(result);
             assertEquals(1, result.getTotalElements());
             assertEquals(testContactResponse, result.getContent().get(0));
             verify(contactRepository).findByUser(testUser, pageable);
+            verify(contactRepository, never()).searchByUser(any(), any(), any());
             verify(contactMapper).toResponse(testContact);
-        }
-
-        @Nested
-        @DisplayName("Get contact by id tests")
-        class GetContactByIdTests {
-
-            @Test
-            @DisplayName("Should return contact when it exists and belongs to current user")
-            void getById_shouldReturnContact_whenContactExistsAndBelongsToCurrentUser() {
-                // Arrange
-                when(authService.getCurrentUser()).thenReturn(testUser);
-                when(contactRepository.findByIdAndUserId(TEST_CONTACT_ID, testUser.getId()))
-                        .thenReturn(Optional.of(testContact));
-                when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
-
-                // Act
-                ContactResponse result = contactService.getById(TEST_CONTACT_ID);
-
-                // Assert
-                assertNotNull(result);
-                assertEquals(testContact.getId(), result.getId());
-                verify(contactRepository).findByIdAndUserId(TEST_CONTACT_ID, testUser.getId());
-                verify(contactMapper).toResponse(testContact);
-            }
-
-            @Test
-            @DisplayName("Should throw NotFoundException when contact does not exist for current user")
-            void getById_shouldThrowNotFound_whenContactDoesNotExistForCurrentUser() {
-                // Arrange
-                when(authService.getCurrentUser()).thenReturn(testUser);
-                when(contactRepository.findByIdAndUserId(TEST_CONTACT_ID, testUser.getId()))
-                        .thenReturn(Optional.empty());
-
-                // Act + Assert
-                NotFoundException exception = assertThrows(NotFoundException.class,
-                        () -> contactService.getById(TEST_CONTACT_ID));
-
-                assertEquals("Contact not found", exception.getMessage());
-                verify(contactMapper, never()).toResponse(any());
-            }
         }
 
         @Test
@@ -296,13 +257,14 @@ class ContactServiceTest {
             when(contactRepository.findByUser(testUser, pageable)).thenReturn(emptyPage);
 
             // Act
-            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size);
+            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size, null);
 
             // Assert
             assertNotNull(result);
             assertEquals(0, result.getTotalElements());
             assertTrue(result.getContent().isEmpty());
             verify(contactRepository).findByUser(testUser, pageable);
+            verify(contactRepository, never()).searchByUser(any(), any(), any());
             verify(contactMapper, never()).toResponse(any());
         }
 
@@ -328,7 +290,7 @@ class ContactServiceTest {
             when(contactMapper.toResponse(secondContact)).thenReturn(secondContactResponse);
 
             // Act
-            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size);
+            Page<ContactResponse> result = contactService.getAllByCurrentUser(page, size, null);
 
             // Assert
             assertNotNull(result);
@@ -337,8 +299,50 @@ class ContactServiceTest {
             assertEquals(1, result.getContent().size());
             assertEquals(2L, result.getContent().get(0).getId());
             verify(contactRepository).findByUser(testUser, pageable);
+            verify(contactRepository, never()).searchByUser(any(), any(), any());
         }
     }
+
+    @Nested
+    @DisplayName("Get contact by id tests")
+    class GetContactByIdTests {
+
+        @Test
+        @DisplayName("Should return contact when it exists and belongs to current user")
+        void getById_shouldReturnContact_whenContactExistsAndBelongsToCurrentUser() {
+            // Arrange
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactRepository.findByIdAndUserId(TEST_CONTACT_ID, testUser.getId()))
+                    .thenReturn(Optional.of(testContact));
+            when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+            // Act
+            ContactResponse result = contactService.getById(TEST_CONTACT_ID);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(testContact.getId(), result.getId());
+            verify(contactRepository).findByIdAndUserId(TEST_CONTACT_ID, testUser.getId());
+            verify(contactMapper).toResponse(testContact);
+        }
+
+        @Test
+        @DisplayName("Should throw NotFoundException when contact does not exist for current user")
+        void getById_shouldThrowNotFound_whenContactDoesNotExistForCurrentUser() {
+            // Arrange
+            when(authService.getCurrentUser()).thenReturn(testUser);
+            when(contactRepository.findByIdAndUserId(TEST_CONTACT_ID, testUser.getId()))
+                    .thenReturn(Optional.empty());
+
+            // Act + Assert
+            NotFoundException exception = assertThrows(NotFoundException.class,
+                    () -> contactService.getById(TEST_CONTACT_ID));
+
+            assertEquals("Contact not found", exception.getMessage());
+            verify(contactMapper, never()).toResponse(any());
+        }
+    }
+
 
     @Nested
     @DisplayName("Update contact tests")

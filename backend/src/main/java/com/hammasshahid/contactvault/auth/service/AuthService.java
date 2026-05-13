@@ -12,12 +12,14 @@ import com.hammasshahid.contactvault.user.entity.User;
 import com.hammasshahid.contactvault.user.mapper.UserMapper;
 import com.hammasshahid.contactvault.user.repository.UserRepository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -25,15 +27,20 @@ public class AuthService {
     private final JwtService jwtService;
 
     public UserResponse register(RegisterRequest request) {
+        log.info("Attempting to register user with email {}", request.getEmail());
+
         boolean isPresent = userRepository.findByEmail(request.getEmail()).isPresent();
 
-        if (isPresent)
+        if (isPresent) {
+            log.warn("Registration failed, email {} already exists", request.getEmail());
             throw new BadRequestException("Email already exists");
+        }
 
         User user = userMapper.toEntity(request);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
 
         userRepository.save(user);
+        log.info("User registered successfully with email {}", user.getEmail());
 
         return userMapper.toResponse(user);
     }

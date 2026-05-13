@@ -1,6 +1,8 @@
 package com.hammasshahid.contactvault.auth.service;
 
 import com.hammasshahid.contactvault.auth.dto.LoginRequest;
+import com.hammasshahid.contactvault.auth.dto.LoginResponse;
+import com.hammasshahid.contactvault.auth.helper.Jwt;
 import com.hammasshahid.contactvault.common.exception.BadRequestException;
 import com.hammasshahid.contactvault.user.dto.RegisterRequest;
 import com.hammasshahid.contactvault.user.dto.UserResponse;
@@ -132,6 +134,66 @@ class AuthServiceTest {
             InOrder inOrder = inOrder(passwordEncoder, userRepository);
             inOrder.verify(passwordEncoder).encode(testRegisterRequest.getPassword());
             inOrder.verify(userRepository).save(testUser);
+        }
+    }
+
+    @Nested
+    @DisplayName("Login tests")
+    class LoginTests {
+
+        @Test
+        @DisplayName("Should return token when credentials are correct")
+        void login_shouldReturnToken_whenCredentialsAreCorrect() {
+            // Arrange
+            Jwt mockJwt = mock(Jwt.class);
+            when(mockJwt.toString()).thenReturn("mocked.jwt.token");
+
+            when(userRepository.findByEmail(testLoginRequest.getEmail()))
+                    .thenReturn(Optional.of(testUser));
+            when(passwordEncoder.matches(testLoginRequest.getPassword(), testUser.getPassword()))
+                    .thenReturn(true);
+            when(jwtService.generateAccessToken(testLoginRequest.getEmail()))
+                    .thenReturn(mockJwt);
+
+            // Act
+            LoginResponse result = authService.login(testLoginRequest);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals("mocked.jwt.token", result.token);
+            verify(jwtService).generateAccessToken(testLoginRequest.getEmail());
+        }
+
+        @Test
+        @DisplayName("Should throw BadRequestException when email does not exist")
+        void login_shouldThrowBadRequest_whenEmailDoesNotExist() {
+            // Arrange
+            when(userRepository.findByEmail(testLoginRequest.getEmail()))
+                    .thenReturn(Optional.empty());
+
+            // Act + Assert
+            BadRequestException exception = assertThrows(BadRequestException.class,
+                    () -> authService.login(testLoginRequest));
+
+            assertEquals("Incorrect email or password", exception.getMessage());
+            verify(jwtService, never()).generateAccessToken(any());
+        }
+
+        @Test
+        @DisplayName("Should throw BadRequestException when password is incorrect")
+        void login_shouldThrowBadRequest_whenPasswordIsIncorrect() {
+            // Arrange
+            when(userRepository.findByEmail(testLoginRequest.getEmail()))
+                    .thenReturn(Optional.of(testUser));
+            when(passwordEncoder.matches(testLoginRequest.getPassword(), testUser.getPassword()))
+                    .thenReturn(false);
+
+            // Act + Assert
+            BadRequestException exception = assertThrows(BadRequestException.class,
+                    () -> authService.login(testLoginRequest));
+
+            assertEquals("Incorrect email or password", exception.getMessage());
+            verify(jwtService, never()).generateAccessToken(any());
         }
     }
 }

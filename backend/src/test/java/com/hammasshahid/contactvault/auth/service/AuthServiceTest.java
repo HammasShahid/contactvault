@@ -4,20 +4,21 @@ import com.hammasshahid.contactvault.auth.dto.LoginRequest;
 import com.hammasshahid.contactvault.auth.dto.LoginResponse;
 import com.hammasshahid.contactvault.auth.helper.Jwt;
 import com.hammasshahid.contactvault.common.exception.BadRequestException;
+import com.hammasshahid.contactvault.common.exception.NotFoundException;
+import com.hammasshahid.contactvault.common.exception.UnauthorizedException;
 import com.hammasshahid.contactvault.user.dto.RegisterRequest;
 import com.hammasshahid.contactvault.user.dto.UserResponse;
 import com.hammasshahid.contactvault.user.entity.User;
 import com.hammasshahid.contactvault.user.mapper.UserMapper;
 import com.hammasshahid.contactvault.user.repository.UserRepository.UserRepository;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
@@ -194,6 +195,72 @@ class AuthServiceTest {
 
             assertEquals("Incorrect email or password", exception.getMessage());
             verify(jwtService, never()).generateAccessToken(any());
+        }
+    }
+
+    @Nested
+    @DisplayName("GetCurrentUser tests")
+    class GetCurrentUserTests {
+
+        @Test
+        @DisplayName("Should return User entity when authenticated")
+        void getCurrentUser_shouldReturnUser_whenAuthenticated() {
+            // Arrange
+            Authentication authentication = mock(Authentication.class);
+            when(authentication.getPrincipal()).thenReturn(testUser.getEmail());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            when(userRepository.findByEmail(testUser.getEmail()))
+                    .thenReturn(Optional.of(testUser));
+
+            // Act
+            User result = authService.getCurrentUser();
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(testUser.getEmail(), result.getEmail());
+            assertEquals(testUser.getId(), result.getId());
+            verify(userRepository).findByEmail(testUser.getEmail());
+        }
+
+        @Test
+        @DisplayName("Should throw UnauthorizedException when principal is null")
+        void getCurrentUser_shouldThrowUnauthorized_whenPrincipalIsNull() {
+            // Arrange
+            Authentication authentication = mock(Authentication.class);
+            when(authentication.getPrincipal()).thenReturn(null);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // Act + Assert
+            UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+                    () -> authService.getCurrentUser());
+
+            assertEquals("User not authenticated", exception.getMessage());
+            verify(userRepository, never()).findByEmail(any());
+        }
+
+        @Test
+        @DisplayName("Should throw NotFoundException when user does not exist in database")
+        void getCurrentUser_shouldThrowNotFound_whenUserDoesNotExistInDatabase() {
+            // Arrange
+            Authentication authentication = mock(Authentication.class);
+            when(authentication.getPrincipal()).thenReturn(testUser.getEmail());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            when(userRepository.findByEmail(testUser.getEmail()))
+                    .thenReturn(Optional.empty());
+
+            // Act + Assert
+            NotFoundException exception = assertThrows(NotFoundException.class,
+                    () -> authService.getCurrentUser());
+
+            assertEquals("User not found.", exception.getMessage());
+            verify(userRepository).findByEmail(testUser.getEmail());
+        }
+
+        @AfterEach
+        void clearSecurityContext() {
+            SecurityContextHolder.clearContext();
         }
     }
 }

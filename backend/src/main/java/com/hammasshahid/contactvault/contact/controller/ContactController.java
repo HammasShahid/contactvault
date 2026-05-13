@@ -1,7 +1,7 @@
 package com.hammasshahid.contactvault.contact.controller;
 
-import com.hammasshahid.contactvault.contact.dto.CreateContactRequest;
 import com.hammasshahid.contactvault.contact.dto.ContactResponse;
+import com.hammasshahid.contactvault.contact.dto.CreateContactRequest;
 import com.hammasshahid.contactvault.contact.dto.UpdateContactRequest;
 import com.hammasshahid.contactvault.contact.service.ContactService;
 import jakarta.validation.Valid;
@@ -34,8 +34,8 @@ public class ContactController {
     }
 
     @GetMapping
-    public Page<ContactResponse> getAllByCurrentUser(@RequestParam int page, @RequestParam int size) {
-        return contactService.getAllByCurrentUser(page, size);
+    public Page<ContactResponse> getAllByCurrentUser(@RequestParam int page, @RequestParam int size, @RequestParam(required = false) String query) {
+        return contactService.getAllByCurrentUser(page, size, query);
     }
 
     @PutMapping("/{id}")

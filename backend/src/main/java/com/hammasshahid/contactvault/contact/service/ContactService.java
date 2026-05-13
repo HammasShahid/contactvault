@@ -57,13 +57,19 @@ public class ContactService {
         return contactMapper.toResponse(contact);
     }
 
-    public Page<ContactResponse> getAllByCurrentUser(int page, int size) {
+    public Page<ContactResponse> getAllByCurrentUser(int page, int size, String query) {
         User currentUser = authService.getCurrentUser();
 
-        log.info("Fetching contacts for user {}, page={}, size={}", currentUser.getId(), page, size);
+        log.info("Fetching contacts for user {}, page={}, size={}, query={}", currentUser.getId(), page, size, query);
 
         Pageable pageable = PageRequest.of(page, size);
-        Page<Contact> contactPage = contactRepository.findByUser(currentUser, pageable);
+
+        Page<Contact> contactPage;
+        if (query != null && !query.isBlank()) {
+            contactPage = contactRepository.searchByUser(currentUser, query, pageable);
+        } else {
+            contactPage = contactRepository.findByUser(currentUser, pageable);
+        }
 
         return contactPage.map(contactMapper::toResponse);
     }

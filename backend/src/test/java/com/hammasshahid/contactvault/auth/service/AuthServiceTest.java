@@ -263,4 +263,71 @@ class AuthServiceTest {
             SecurityContextHolder.clearContext();
         }
     }
+
+    @Nested
+    @DisplayName("Me tests")
+    class MeTests {
+
+        @Test
+        @DisplayName("Should return current user when authenticated")
+        void me_shouldReturnCurrentUser_whenAuthenticated() {
+            // Arrange
+            Authentication authentication = mock(Authentication.class);
+            when(authentication.getPrincipal()).thenReturn(testUser.getEmail());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            when(userRepository.findByEmail(testUser.getEmail()))
+                    .thenReturn(Optional.of(testUser));
+            when(userMapper.toResponse(testUser)).thenReturn(testUserResponse);
+
+            // Act
+            UserResponse result = authService.me();
+
+            // Assert
+            assertNotNull(result);
+            assertEquals(testUser.getEmail(), result.getEmail());
+            verify(userRepository).findByEmail(testUser.getEmail());
+            verify(userMapper).toResponse(testUser);
+        }
+
+        @Test
+        @DisplayName("Should throw UnauthorizedException when principal is null")
+        void me_shouldThrowUnauthorized_whenPrincipalIsNull() {
+            // Arrange
+            Authentication authentication = mock(Authentication.class);
+            when(authentication.getPrincipal()).thenReturn(null);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            // Act + Assert
+            UnauthorizedException exception = assertThrows(UnauthorizedException.class,
+                    () -> authService.me());
+
+            assertEquals("User not authenticated", exception.getMessage());
+            verify(userRepository, never()).findByEmail(any());
+        }
+
+        @Test
+        @DisplayName("Should throw NotFoundException when user does not exist in database")
+        void me_shouldThrowNotFound_whenUserDoesNotExistInDatabase() {
+            // Arrange
+            Authentication authentication = mock(Authentication.class);
+            when(authentication.getPrincipal()).thenReturn(testUser.getEmail());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            when(userRepository.findByEmail(testUser.getEmail()))
+                    .thenReturn(Optional.empty());
+
+            // Act + Assert
+            NotFoundException exception = assertThrows(NotFoundException.class,
+                    () -> authService.me());
+
+            assertEquals("User not found", exception.getMessage());
+            verify(userMapper, never()).toResponse(any());
+        }
+
+        @AfterEach
+        void clearSecurityContext() {
+            SecurityContextHolder.clearContext();
+        }
+    }
 }

@@ -46,12 +46,20 @@ public class AuthService {
     }
 
     public LoginResponse login(LoginRequest request) {
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new BadRequestException("Incorrect email or password"));
+        log.info("Login attempt for email {}", request.getEmail());
 
-        if (!passwordEncoder.matches(request.getPassword(), user.getPassword()))
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> {
+            log.warn("Login failed, no user found with email {}", request.getEmail());
+            return new BadRequestException("Incorrect email or password");
+        });
+
+        if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            log.warn("Login failed, incorrect password for email {}", request.getEmail());
             throw new BadRequestException("Incorrect email or password");
+        }
 
         Jwt jwt = jwtService.generateAccessToken(request.getEmail());
+        log.info("User {} logged in successfully", user.getId());
 
         return new LoginResponse(jwt.toString());
     }

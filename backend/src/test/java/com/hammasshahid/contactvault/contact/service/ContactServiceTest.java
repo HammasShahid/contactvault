@@ -242,6 +242,46 @@ class ContactServiceTest {
             verify(contactMapper).toResponse(testContact);
         }
 
+        @Nested
+        @DisplayName("Get contact by id tests")
+        class GetContactByIdTests {
+
+            @Test
+            @DisplayName("Should return contact when it exists and belongs to current user")
+            void getById_shouldReturnContact_whenContactExistsAndBelongsToCurrentUser() {
+                // Arrange
+                when(authService.getCurrentUser()).thenReturn(testUser);
+                when(contactRepository.findByIdAndUserId(TEST_CONTACT_ID, testUser.getId()))
+                        .thenReturn(Optional.of(testContact));
+                when(contactMapper.toResponse(testContact)).thenReturn(testContactResponse);
+
+                // Act
+                ContactResponse result = contactService.getById(TEST_CONTACT_ID);
+
+                // Assert
+                assertNotNull(result);
+                assertEquals(testContact.getId(), result.getId());
+                verify(contactRepository).findByIdAndUserId(TEST_CONTACT_ID, testUser.getId());
+                verify(contactMapper).toResponse(testContact);
+            }
+
+            @Test
+            @DisplayName("Should throw NotFoundException when contact does not exist for current user")
+            void getById_shouldThrowNotFound_whenContactDoesNotExistForCurrentUser() {
+                // Arrange
+                when(authService.getCurrentUser()).thenReturn(testUser);
+                when(contactRepository.findByIdAndUserId(TEST_CONTACT_ID, testUser.getId()))
+                        .thenReturn(Optional.empty());
+
+                // Act + Assert
+                NotFoundException exception = assertThrows(NotFoundException.class,
+                        () -> contactService.getById(TEST_CONTACT_ID));
+
+                assertEquals("Contact not found", exception.getMessage());
+                verify(contactMapper, never()).toResponse(any());
+            }
+        }
+
         @Test
         @DisplayName("Should return empty page when user has no contacts")
         void getAllByCurrentUser_shouldReturnEmptyPage_whenUserHasNoContacts() {

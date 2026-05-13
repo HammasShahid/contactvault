@@ -65,11 +65,17 @@ public class AuthService {
     }
 
     public UserResponse me() {
+        log.info("Fetching profile for current user");
         String email = (String) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (email == null)
+        if (email == null) {
+            log.warn("Unauthenticated access attempt to /me");
             throw new UnauthorizedException("User not authenticated");
+        }
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new NotFoundException("User not found"));
+        User user = userRepository.findByEmail(email).orElseThrow(() -> {
+            log.info("Authenticated principal {} not found in database", email);
+            return new NotFoundException("User not found");
+        });
 
         return userMapper.toResponse(user);
     }

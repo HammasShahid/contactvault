@@ -1,8 +1,12 @@
 package com.hammasshahid.contactvault.auth.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @AllArgsConstructor
+@Getter
+@Setter
 public class LoginResponse {
-    public String token;
+    private String token;
 }

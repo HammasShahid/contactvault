@@ -161,7 +161,7 @@ class AuthServiceTest {
 
             // Assert
             assertNotNull(result);
-            assertEquals("mocked.jwt.token", result.token);
+            assertEquals("mocked.jwt.token", result.getToken());
             verify(jwtService).generateAccessToken(testLoginRequest.getEmail());
         }
 

@@ -2,6 +2,7 @@ package com.hammasshahid.contactvault.auth.controller;
 
 import com.hammasshahid.contactvault.auth.dto.LoginRequest;
 import com.hammasshahid.contactvault.auth.dto.LoginResponse;
+import com.hammasshahid.contactvault.auth.dto.ChangePasswordRequest;
 import com.hammasshahid.contactvault.auth.service.AuthService;
 import com.hammasshahid.contactvault.user.dto.RegisterRequest;
 import com.hammasshahid.contactvault.user.dto.UserResponse;
@@ -35,5 +36,11 @@ public class AuthController {
     @GetMapping("/me")
     public UserResponse me() {
         return authService.me();
+    }
+
+    @PostMapping("/change-password")
+    public ResponseEntity<Void> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
+        authService.changePassword(request);
+        return ResponseEntity.noContent().build();
     }
 }

@@ -2,6 +2,7 @@ package com.hammasshahid.contactvault.auth.service;
 
 import com.hammasshahid.contactvault.auth.dto.LoginRequest;
 import com.hammasshahid.contactvault.auth.dto.LoginResponse;
+import com.hammasshahid.contactvault.auth.dto.ChangePasswordRequest;
 import com.hammasshahid.contactvault.auth.helper.Jwt;
 import com.hammasshahid.contactvault.common.exception.BadRequestException;
 import com.hammasshahid.contactvault.common.exception.NotFoundException;
@@ -91,5 +92,19 @@ public class AuthService {
             log.warn("Authenticated principal {} not found in database", email);
             return new NotFoundException("User not found.");
         });
+    }
+
+    public void changePassword(ChangePasswordRequest request) {
+        User user = getCurrentUser();
+        log.info("Attempting to change password for user {}", user.getId());
+
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
+            log.warn("Password change failed: incorrect old password for user {}", user.getId());
+            throw new UnauthorizedException("Incorrect current password");
+        }
+
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        log.info("Password changed successfully for user {}", user.getId());
     }
 }

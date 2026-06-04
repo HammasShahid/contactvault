@@ -17,8 +17,10 @@ export const authApi = {
     return response.data;
   },
 
-  me: async (): Promise<UserResponse> => {
-    const response = await apiClient.get<UserResponse>('/auth/me');
+  me: async (token?: string): Promise<UserResponse> => {
+    const response = await apiClient.get<UserResponse>('/auth/me', {
+      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+    });
     return response.data;
   },
 };

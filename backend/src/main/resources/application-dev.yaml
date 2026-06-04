@@ -6,3 +6,5 @@ spring:
 
   jpa:
     show-sql: true
+
+frontEndUrl: http://localhost:3000

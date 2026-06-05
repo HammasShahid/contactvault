@@ -2,13 +2,16 @@ export default function SidebarItem({
   icon: Icon,
   children,
   active = false,
+  onClick,
 }: {
   icon: any;
   children: React.ReactNode;
   active?: boolean;
+  onClick?: () => void;
 }) {
   return (
     <button
+      onClick={onClick}
       className={`flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-all ${
         active
           ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/20'

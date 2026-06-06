@@ -36,6 +36,11 @@ export function EmailFields({
 
       {fields.map((field, index) => (
         <div key={field.id} className="space-y-3 rounded-2xl border p-4">
+          {/* Hidden id — carries existing email id for update, undefined for new */}
+          <input
+            type="hidden"
+            {...register(`emails.${index}.id`, { valueAsNumber: true })}
+          />
           <div className="space-y-2">
             <Label>Label</Label>
             <Input

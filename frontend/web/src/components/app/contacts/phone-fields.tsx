@@ -36,6 +36,10 @@ export function PhoneFields({
 
       {fields.map((field, index) => (
         <div key={field.id} className="space-y-3 rounded-2xl border p-4">
+          <input
+            type="hidden"
+            {...register(`phones.${index}.id`, { valueAsNumber: true })}
+          />
           <div className="space-y-2">
             <Label>Label</Label>
             <Input

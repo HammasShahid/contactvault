@@ -72,9 +72,8 @@ function RouteComponent() {
         <ContactPhonesCard phones={contact.phones} />
       </div>
       <ContactActions
-        contactId={contact.id}
+        contact={contact}
         isDeleting={isDeleting}
-        onEdit={handleEdit}
         onDelete={handleDelete}
       />
     </div>

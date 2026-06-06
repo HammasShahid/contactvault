@@ -119,7 +119,7 @@ import { contactsApi } from '@/api/contactsApi';
 import { queryKeys } from '@/lib/queryKeys';
 import {
   contactFormSchema,
-  ContactFormValues,
+  type ContactFormValues,
 } from '@/lib/schemas/contactSchemas';
 
 interface Props {

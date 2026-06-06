@@ -1,5 +1,10 @@
 import apiClient from '@/lib/apiClient';
-import type { ContactResponse, CreateContactRequest, Page } from '@/types';
+import type {
+  ContactResponse,
+  CreateContactRequest,
+  Page,
+  UpdateContactRequest,
+} from '@/types';
 
 export const contactsApi = {
   getAll: async (
@@ -24,6 +29,17 @@ export const contactsApi = {
 
   create: async (data: CreateContactRequest): Promise<ContactResponse> => {
     const response = await apiClient.post<ContactResponse>('/contacts', data);
+    return response.data;
+  },
+
+  update: async (
+    id: number,
+    data: UpdateContactRequest,
+  ): Promise<ContactResponse> => {
+    const response = await apiClient.put<ContactResponse>(
+      `/contacts/${id}`,
+      data,
+    );
     return response.data;
   },
 };

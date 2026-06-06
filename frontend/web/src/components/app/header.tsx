@@ -2,6 +2,7 @@ import { Bell, Plus, Search } from 'lucide-react';
 import MobileSidebar from './mobile-sidebar';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
+import { AddContactSheet } from './contacts/add-contact-sheet';
 
 export default function AppHeader({ pageName }: { pageName: string }) {
   return (
@@ -23,10 +24,7 @@ export default function AppHeader({ pageName }: { pageName: string }) {
           />
         </div>
 
-        <Button className="h-12 rounded-2xl px-6 font-semibold shadow-lg shadow-primary/20">
-          <Plus className="mr-2 h-4 w-4" />
-          Add Contact
-        </Button>
+        <AddContactSheet />
 
         <Button variant="outline" size="icon" className="h-12 w-12 rounded-2xl">
           <Bell className="h-5 w-5" />

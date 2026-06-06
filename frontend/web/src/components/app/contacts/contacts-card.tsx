@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ContactResponse } from '@/types';
 import { useRouter } from '@tanstack/react-router';
+import { EditContactSheet } from './edit-contact-sheet';
 
 interface Props {
   contact: ContactResponse;
@@ -58,7 +59,8 @@ export function ContactCard({ contact }: Props) {
           >
             View
           </Button>
-          <Button className="flex-1 rounded-xl">Edit</Button>
+          {/* <Button className="flex-1 rounded-xl">Edit</Button> */}
+          <EditContactSheet contact={contact} />
         </div>
       </CardContent>
     </Card>

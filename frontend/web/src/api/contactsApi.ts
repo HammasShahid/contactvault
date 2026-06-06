@@ -1,5 +1,5 @@
 import apiClient from '@/lib/apiClient';
-import type { ContactResponse, Page } from '@/types';
+import type { ContactResponse, CreateContactRequest, Page } from '@/types';
 
 export const contactsApi = {
   getAll: async (
@@ -20,5 +20,10 @@ export const contactsApi = {
 
   delete: async (id: number): Promise<void> => {
     await apiClient.delete(`/contacts/${id}`);
+  },
+
+  create: async (data: CreateContactRequest): Promise<ContactResponse> => {
+    const response = await apiClient.post<ContactResponse>('/contacts', data);
+    return response.data;
   },
 };

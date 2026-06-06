@@ -1,5 +1,4 @@
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { AddContactSheet } from './add-contact-sheet';
 
 export function ContactsHeader() {
   return (
@@ -12,10 +11,7 @@ export function ContactsHeader() {
         </p>
       </div>
 
-      <Button size="lg" className="rounded-2xl shadow-lg shadow-primary/20">
-        <Plus className="mr-2 h-4 w-4" />
-        Add Contact
-      </Button>
+      <AddContactSheet />
     </div>
   );
 }

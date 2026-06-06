@@ -51,3 +51,21 @@ export interface Page<T> {
   first: boolean;
   last: boolean;
 }
+
+export interface CreateContactEmailRequest {
+  email: string;
+  label: string;
+}
+
+export interface CreateContactPhoneRequest {
+  phoneNumber: string;
+  label: string;
+}
+
+export interface CreateContactRequest {
+  firstName: string;
+  lastName?: string;
+  title?: string;
+  emails?: CreateContactEmailRequest[];
+  phones?: CreateContactPhoneRequest[];
+}

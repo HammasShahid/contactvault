@@ -1,3 +1,4 @@
+import type { ContactResponse } from '#/types';
 import { ContactCard } from './contacts-card';
 
 const contacts = [
@@ -27,7 +28,17 @@ const contacts = [
   },
 ];
 
-export function ContactsGrid() {
+interface ContactsGridProps {
+  contacts: ContactResponse[];
+  isLoading: boolean;
+  isError: boolean;
+}
+
+export function ContactsGrid({
+  contacts,
+  isLoading,
+  isError,
+}: ContactsGridProps) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
       {contacts.map((contact) => (

@@ -2,7 +2,12 @@ import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 
-export function ContactsToolbar() {
+interface ContactsToolbarProps {
+  query: string;
+  onSearch: (value: string) => void;
+}
+
+export function ContactsToolbar({ query, onSearch }: ContactsToolbarProps) {
   return (
     <div className="flex flex-col gap-4 md:flex-row">
       <div className="relative flex-1">

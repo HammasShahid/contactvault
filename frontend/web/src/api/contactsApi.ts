@@ -17,4 +17,8 @@ export const contactsApi = {
     const response = await apiClient.get<ContactResponse>(`/contacts/${id}`);
     return response.data;
   },
+
+  delete: async (id: number): Promise<void> => {
+    await apiClient.delete(`/contacts/${id}`);
+  },
 };

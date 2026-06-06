@@ -4,13 +4,14 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ContactResponse } from '@/types';
-import { Link } from '@tanstack/react-router';
+import { useRouter } from '@tanstack/react-router';
 
 interface Props {
   contact: ContactResponse;
 }
 
 export function ContactCard({ contact }: Props) {
+  const router = useRouter();
   const primaryEmail = contact.emails?.[0]?.email;
   const primaryPhone = contact.phones?.[0]?.phoneNumber;
   const initials =
@@ -45,8 +46,17 @@ export function ContactCard({ contact }: Props) {
         </div>
 
         <div className="mt-6 flex gap-3">
-          <Button variant="outline" className="flex-1 rounded-xl">
-            <Link to={`/contacts/${contact.id}`}>View</Link>
+          <Button
+            variant="outline"
+            className="flex-1 rounded-xl"
+            onClick={() =>
+              router.navigate({
+                to: '/contacts/$id',
+                params: { id: String(contact.id) },
+              })
+            }
+          >
+            View
           </Button>
           <Button className="flex-1 rounded-xl">Edit</Button>
         </div>

@@ -69,3 +69,23 @@ export interface CreateContactRequest {
   emails?: CreateContactEmailRequest[];
   phones?: CreateContactPhoneRequest[];
 }
+
+export interface UpdateContactEmailRequest {
+  id?: number;
+  email: string;
+  label: string;
+}
+
+export interface UpdateContactPhoneRequest {
+  id?: number;
+  phoneNumber: string;
+  label: string;
+}
+
+export interface UpdateContactRequest {
+  firstName: string;
+  lastName?: string;
+  title?: string;
+  emails?: UpdateContactEmailRequest[];
+  phones?: UpdateContactPhoneRequest[];
+}

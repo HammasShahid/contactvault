@@ -5,6 +5,9 @@ import { Card, CardContent } from '@/components/ui/card';
 
 type Props = {
   contactId: number;
+  isDeleting: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
 };
 
 export function ContactActions({ contactId }: Props) {

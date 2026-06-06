@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import type { ContactResponse } from '@/types';
+import { Link } from '@tanstack/react-router';
 
 interface Props {
   contact: ContactResponse;
@@ -45,7 +46,7 @@ export function ContactCard({ contact }: Props) {
 
         <div className="mt-6 flex gap-3">
           <Button variant="outline" className="flex-1 rounded-xl">
-            View
+            <Link to={`/contacts/${contact.id}`}>View</Link>
           </Button>
           <Button className="flex-1 rounded-xl">Edit</Button>
         </div>

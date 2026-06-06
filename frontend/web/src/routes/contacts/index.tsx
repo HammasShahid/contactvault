@@ -8,7 +8,7 @@ import { useContacts } from '@/hooks/useContacts';
 
 const PAGE_SIZE = 12;
 
-export const Route = createFileRoute('/contacts')({
+export const Route = createFileRoute('/contacts/')({
   component: RouteComponent,
 });
 

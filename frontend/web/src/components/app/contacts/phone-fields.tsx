@@ -38,7 +38,12 @@ export function PhoneFields({
         <div key={field.id} className="space-y-3 rounded-2xl border p-4">
           <input
             type="hidden"
-            {...register(`phones.${index}.id`, { valueAsNumber: true })}
+            {...register(`phones.${index}.id`, {
+              setValueAs: (v) =>
+                v === '' || v === undefined || isNaN(Number(v))
+                  ? undefined
+                  : Number(v),
+            })}
           />
           <div className="space-y-2">
             <Label>Label</Label>

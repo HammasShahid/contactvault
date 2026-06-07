@@ -39,7 +39,12 @@ export function EmailFields({
           {/* Hidden id — carries existing email id for update, undefined for new */}
           <input
             type="hidden"
-            {...register(`emails.${index}.id`, { valueAsNumber: true })}
+            {...register(`emails.${index}.id`, {
+              setValueAs: (v) =>
+                v === '' || v === undefined || isNaN(Number(v))
+                  ? undefined
+                  : Number(v),
+            })}
           />
           <div className="space-y-2">
             <Label>Label</Label>

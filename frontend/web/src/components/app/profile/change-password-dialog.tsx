@@ -38,7 +38,7 @@ export function ChangePasswordDialog({ children }: Props) {
   const onSubmit = async (values: ChangePasswordFormValues) => {
     try {
       await authApi.changePassword({
-        currentPassword: values.currentPassword,
+        oldPassword: values.oldPassword,
         newPassword: values.newPassword,
       });
       reset();
@@ -74,11 +74,11 @@ export function ChangePasswordDialog({ children }: Props) {
             <Input
               type="password"
               className="rounded-xl"
-              {...register('currentPassword')}
+              {...register('oldPassword')}
             />
-            {errors.currentPassword && (
+            {errors.oldPassword && (
               <p className="text-sm text-destructive">
-                {errors.currentPassword.message}
+                {errors.oldPassword.message}
               </p>
             )}
           </div>

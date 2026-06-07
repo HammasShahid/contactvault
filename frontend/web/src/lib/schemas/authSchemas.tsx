@@ -20,7 +20,7 @@ export const registerSchema = z
 
 export const changePasswordSchema = z
   .object({
-    currentPassword: z.string().min(1, 'Current password is required'),
+    oldPassword: z.string().min(1, 'Current password is required'),
     newPassword: z.string().min(7, 'Password must be at least 7 characters'),
     confirmPassword: z.string().min(1, 'Please confirm your new password'),
   })
@@ -28,7 +28,7 @@ export const changePasswordSchema = z
     message: 'Passwords do not match',
     path: ['confirmPassword'],
   })
-  .refine((data) => data.currentPassword !== data.newPassword, {
+  .refine((data) => data.oldPassword !== data.newPassword, {
     message: 'New password must be different from current password',
     path: ['newPassword'],
   });

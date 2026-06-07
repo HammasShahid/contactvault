@@ -22,3 +22,16 @@ export const useAuthStore = create<AuthState>()(
     { name: 'auth-storage' },
   ),
 );
+
+export const getPersistedToken = (): string | null => {
+  // localStorage is not available on the server
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem('auth-storage');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.token ?? null;
+  } catch {
+    return null;
+  }
+};

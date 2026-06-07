@@ -88,12 +88,6 @@ export default function LoginForm() {
               <input type="checkbox" className="rounded" />
               Remember me
             </label>
-            <button
-              type="button"
-              className="font-medium text-primary transition-colors hover:text-primary/80"
-            >
-              Forgot Password?
-            </button>
           </div>
 
           {errors.root && (

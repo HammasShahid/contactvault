@@ -9,26 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProfileRouteImport } from './routes/profile'
-import { Route as DashboardRouteImport } from './routes/dashboard'
-import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ProtectedRouteRouteImport } from './routes/_protected/route'
+import { Route as GuestRouteRouteImport } from './routes/_guest/route'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ContactsIndexRouteImport } from './routes/contacts/index'
-import { Route as ContactsIdRouteImport } from './routes/contacts/$id'
+import { Route as ProtectedProfileRouteImport } from './routes/_protected/profile'
+import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
+import { Route as GuestAuthRouteImport } from './routes/_guest/auth'
+import { Route as ProtectedContactsIndexRouteImport } from './routes/_protected/contacts/index'
+import { Route as ProtectedContactsIdRouteImport } from './routes/_protected/contacts/$id'
 
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
+const ProtectedRouteRoute = ProtectedRouteRouteImport.update({
+  id: '/_protected',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DashboardRoute = DashboardRouteImport.update({
-  id: '/dashboard',
-  path: '/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AuthRoute = AuthRouteImport.update({
-  id: '/auth',
-  path: '/auth',
+const GuestRouteRoute = GuestRouteRouteImport.update({
+  id: '/_guest',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -36,41 +31,58 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ContactsIndexRoute = ContactsIndexRouteImport.update({
+const ProtectedProfileRoute = ProtectedProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => ProtectedRouteRoute,
+} as any)
+const GuestAuthRoute = GuestAuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
+  getParentRoute: () => GuestRouteRoute,
+} as any)
+const ProtectedContactsIndexRoute = ProtectedContactsIndexRouteImport.update({
   id: '/contacts/',
   path: '/contacts/',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ProtectedRouteRoute,
 } as any)
-const ContactsIdRoute = ContactsIdRouteImport.update({
+const ProtectedContactsIdRoute = ProtectedContactsIdRouteImport.update({
   id: '/contacts/$id',
   path: '/contacts/$id',
-  getParentRoute: () => rootRouteImport,
+  getParentRoute: () => ProtectedRouteRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
-  '/profile': typeof ProfileRoute
-  '/contacts/$id': typeof ContactsIdRoute
-  '/contacts/': typeof ContactsIndexRoute
+  '/auth': typeof GuestAuthRoute
+  '/dashboard': typeof ProtectedDashboardRoute
+  '/profile': typeof ProtectedProfileRoute
+  '/contacts/$id': typeof ProtectedContactsIdRoute
+  '/contacts/': typeof ProtectedContactsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
-  '/profile': typeof ProfileRoute
-  '/contacts/$id': typeof ContactsIdRoute
-  '/contacts': typeof ContactsIndexRoute
+  '/auth': typeof GuestAuthRoute
+  '/dashboard': typeof ProtectedDashboardRoute
+  '/profile': typeof ProtectedProfileRoute
+  '/contacts/$id': typeof ProtectedContactsIdRoute
+  '/contacts': typeof ProtectedContactsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
-  '/dashboard': typeof DashboardRoute
-  '/profile': typeof ProfileRoute
-  '/contacts/$id': typeof ContactsIdRoute
-  '/contacts/': typeof ContactsIndexRoute
+  '/_guest': typeof GuestRouteRouteWithChildren
+  '/_protected': typeof ProtectedRouteRouteWithChildren
+  '/_guest/auth': typeof GuestAuthRoute
+  '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/profile': typeof ProtectedProfileRoute
+  '/_protected/contacts/$id': typeof ProtectedContactsIdRoute
+  '/_protected/contacts/': typeof ProtectedContactsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -86,43 +98,35 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/auth'
-    | '/dashboard'
-    | '/profile'
-    | '/contacts/$id'
-    | '/contacts/'
+    | '/_guest'
+    | '/_protected'
+    | '/_guest/auth'
+    | '/_protected/dashboard'
+    | '/_protected/profile'
+    | '/_protected/contacts/$id'
+    | '/_protected/contacts/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AuthRoute: typeof AuthRoute
-  DashboardRoute: typeof DashboardRoute
-  ProfileRoute: typeof ProfileRoute
-  ContactsIdRoute: typeof ContactsIdRoute
-  ContactsIndexRoute: typeof ContactsIndexRoute
+  GuestRouteRoute: typeof GuestRouteRouteWithChildren
+  ProtectedRouteRoute: typeof ProtectedRouteRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
+    '/_protected': {
+      id: '/_protected'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof ProtectedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/dashboard': {
-      id: '/dashboard'
-      path: '/dashboard'
-      fullPath: '/dashboard'
-      preLoaderRoute: typeof DashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth': {
-      id: '/auth'
-      path: '/auth'
-      fullPath: '/auth'
-      preLoaderRoute: typeof AuthRouteImport
+    '/_guest': {
+      id: '/_guest'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof GuestRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -132,30 +136,78 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/contacts/': {
-      id: '/contacts/'
+    '/_protected/profile': {
+      id: '/_protected/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProtectedProfileRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_protected/dashboard': {
+      id: '/_protected/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof ProtectedDashboardRouteImport
+      parentRoute: typeof ProtectedRouteRoute
+    }
+    '/_guest/auth': {
+      id: '/_guest/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof GuestAuthRouteImport
+      parentRoute: typeof GuestRouteRoute
+    }
+    '/_protected/contacts/': {
+      id: '/_protected/contacts/'
       path: '/contacts'
       fullPath: '/contacts/'
-      preLoaderRoute: typeof ContactsIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ProtectedContactsIndexRouteImport
+      parentRoute: typeof ProtectedRouteRoute
     }
-    '/contacts/$id': {
-      id: '/contacts/$id'
+    '/_protected/contacts/$id': {
+      id: '/_protected/contacts/$id'
       path: '/contacts/$id'
       fullPath: '/contacts/$id'
-      preLoaderRoute: typeof ContactsIdRouteImport
-      parentRoute: typeof rootRouteImport
+      preLoaderRoute: typeof ProtectedContactsIdRouteImport
+      parentRoute: typeof ProtectedRouteRoute
     }
   }
 }
 
+interface GuestRouteRouteChildren {
+  GuestAuthRoute: typeof GuestAuthRoute
+}
+
+const GuestRouteRouteChildren: GuestRouteRouteChildren = {
+  GuestAuthRoute: GuestAuthRoute,
+}
+
+const GuestRouteRouteWithChildren = GuestRouteRoute._addFileChildren(
+  GuestRouteRouteChildren,
+)
+
+interface ProtectedRouteRouteChildren {
+  ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedProfileRoute: typeof ProtectedProfileRoute
+  ProtectedContactsIdRoute: typeof ProtectedContactsIdRoute
+  ProtectedContactsIndexRoute: typeof ProtectedContactsIndexRoute
+}
+
+const ProtectedRouteRouteChildren: ProtectedRouteRouteChildren = {
+  ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedProfileRoute: ProtectedProfileRoute,
+  ProtectedContactsIdRoute: ProtectedContactsIdRoute,
+  ProtectedContactsIndexRoute: ProtectedContactsIndexRoute,
+}
+
+const ProtectedRouteRouteWithChildren = ProtectedRouteRoute._addFileChildren(
+  ProtectedRouteRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AuthRoute: AuthRoute,
-  DashboardRoute: DashboardRoute,
-  ProfileRoute: ProfileRoute,
-  ContactsIdRoute: ContactsIdRoute,
-  ContactsIndexRoute: ContactsIndexRoute,
+  GuestRouteRoute: GuestRouteRouteWithChildren,
+  ProtectedRouteRoute: ProtectedRouteRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

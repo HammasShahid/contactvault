@@ -1,7 +1,4 @@
-import { Bell, Plus, Search } from 'lucide-react';
 import MobileSidebar from './mobile-sidebar';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
 import { AddContactSheet } from './contacts/add-contact-sheet';
 
 export default function AppHeader({ pageName }: { pageName: string }) {

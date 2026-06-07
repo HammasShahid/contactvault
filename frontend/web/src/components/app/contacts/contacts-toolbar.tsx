@@ -30,12 +30,6 @@ export function ContactsToolbar({ query, onSearch }: Props) {
           onChange={(e) => setLocalQuery(e.target.value)}
         />
       </div>
-      <Button variant="outline" className="h-12 rounded-2xl">
-        Filter
-      </Button>
-      <Button variant="outline" className="h-12 rounded-2xl">
-        Sort
-      </Button>
     </div>
   );
 }

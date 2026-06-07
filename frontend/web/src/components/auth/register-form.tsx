@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useRouter } from '@tanstack/react-router';
 import { Button } from '../ui/button';
 import {
   Card,
@@ -17,13 +17,18 @@ import {
   type RegisterFormValues,
 } from '@/lib/schemas/authSchemas';
 
-export default function RegisterForm() {
-  const router = useRouter();
+interface Props {
+  onSuccess: () => void;
+}
+
+export default function RegisterForm({ onSuccess }: Props) {
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const {
     register,
     handleSubmit,
     setError,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -37,8 +42,13 @@ export default function RegisterForm() {
         email: values.email,
         password: values.password,
       });
-      // Redirect to auth page to login after successful registration
-      router.navigate({ to: '/auth', search: { tab: 'login' } });
+      reset();
+      setSuccessMessage('Account created successfully! Please log in.');
+      // Brief delay so user can read the success message before tab switches
+      setTimeout(() => {
+        setSuccessMessage(null);
+        onSuccess();
+      }, 1500);
     } catch (error: any) {
       const message =
         error?.response?.data?.message ??
@@ -136,9 +146,17 @@ export default function RegisterForm() {
             )}
           </div>
 
+          {/* Server error */}
           {errors.root && (
             <p className="rounded-xl bg-destructive/10 px-4 py-3 text-sm text-destructive">
               {errors.root.message}
+            </p>
+          )}
+
+          {/* Success message */}
+          {successMessage && (
+            <p className="rounded-xl bg-green-500/10 px-4 py-3 text-sm text-green-600 dark:text-green-400">
+              {successMessage}
             </p>
           )}
 

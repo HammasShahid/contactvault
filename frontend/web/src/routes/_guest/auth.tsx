@@ -1,5 +1,5 @@
+import { useState } from 'react';
 import { createFileRoute, Link } from '@tanstack/react-router';
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import LoginForm from '#/components/auth/login-form';
 import RegisterForm from '#/components/auth/register-form';
@@ -9,6 +9,8 @@ export const Route = createFileRoute('/_guest/auth')({
 });
 
 function RouteComponent() {
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
+
   return (
     <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 py-12 text-foreground">
       {/* Background Glow */}
@@ -21,13 +23,11 @@ function RouteComponent() {
         {/* Left Side */}
         <div className="relative hidden flex-col justify-between overflow-hidden bg-secondary p-12 text-secondary-foreground lg:flex">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,hsl(var(--primary)/0.25),transparent_40%)]" />
-
           <div className="relative z-10">
             <div className="flex items-center gap-3">
               <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-xl font-black text-primary-foreground shadow-lg shadow-primary/30">
                 C
               </div>
-
               <div>
                 <h1 className="text-xl font-bold">ContactVault</h1>
                 <p className="text-sm text-secondary-foreground/70">
@@ -35,20 +35,17 @@ function RouteComponent() {
                 </p>
               </div>
             </div>
-
             <div className="mt-20 max-w-md">
               <h2 className="text-5xl font-black leading-tight tracking-tight">
                 Manage Contacts
                 <span className="block text-primary">With Confidence</span>
               </h2>
-
               <p className="mt-6 text-lg leading-8 text-secondary-foreground/80">
                 Securely organize contacts, emails, and phone numbers in one
                 modern platform.
               </p>
             </div>
           </div>
-
           <div className="relative z-10 grid gap-4">
             <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
               <p className="text-sm text-secondary-foreground/70">
@@ -56,7 +53,6 @@ function RouteComponent() {
               </p>
               <h3 className="mt-2 text-3xl font-bold">10,000+</h3>
             </div>
-
             <div className="rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-sm">
               <p className="text-sm text-secondary-foreground/70">
                 Secure Authentication
@@ -68,7 +64,11 @@ function RouteComponent() {
 
         {/* Right Side */}
         <div className="flex items-center justify-center p-6 sm:p-10 lg:p-14">
-          <Tabs defaultValue="login" className="w-full max-w-md">
+          <Tabs
+            value={activeTab}
+            onValueChange={(v) => setActiveTab(v as 'login' | 'register')}
+            className="w-full max-w-md"
+          >
             <TabsList className="grid w-full grid-cols-2 rounded-2xl bg-muted p-1">
               <TabsTrigger value="login" className="rounded-xl cursor-pointer">
                 Login
@@ -81,14 +81,12 @@ function RouteComponent() {
               </TabsTrigger>
             </TabsList>
 
-            {/* Login */}
             <TabsContent value="login">
               <LoginForm />
             </TabsContent>
 
-            {/* Register */}
             <TabsContent value="register">
-              <RegisterForm />
+              <RegisterForm onSuccess={() => setActiveTab('login')} />
             </TabsContent>
 
             <p className="mt-8 text-center text-sm text-muted-foreground">

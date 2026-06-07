@@ -27,6 +27,7 @@
 
 import apiClient from '@/lib/apiClient';
 import type {
+  ChangePasswordRequest,
   LoginRequest,
   LoginResponse,
   RegisterRequest,
@@ -51,5 +52,9 @@ export const authApi = {
       ...(token && { headers: { Authorization: `Bearer ${token}` } }),
     });
     return response.data;
+  },
+
+  changePassword: async (data: ChangePasswordRequest): Promise<void> => {
+    await apiClient.patch('/auth/change-password', data);
   },
 };

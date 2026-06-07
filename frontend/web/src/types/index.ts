@@ -89,3 +89,8 @@ export interface UpdateContactRequest {
   emails?: UpdateContactEmailRequest[];
   phones?: UpdateContactPhoneRequest[];
 }
+
+export interface ChangePasswordRequest {
+  currentPassword: string;
+  newPassword: string;
+}

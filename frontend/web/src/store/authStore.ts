@@ -23,19 +23,6 @@ export const useAuthStore = create<AuthState>()(
   ),
 );
 
-// export const getPersistedToken = (): string | null => {
-//   // localStorage is not available on the server
-//   if (typeof window === 'undefined') return null;
-//   try {
-//     const raw = localStorage.getItem('auth-storage');
-//     if (!raw) return null;
-//     const parsed = JSON.parse(raw);
-//     return parsed?.state?.token ?? null;
-//   } catch {
-//     return null;
-//   }
-// };
-
 const isTokenExpired = (token: string): boolean => {
   try {
     // JWT payload is the second segment, base64 encoded

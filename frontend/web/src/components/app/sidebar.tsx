@@ -1,4 +1,10 @@
-import { LayoutDashboard, LogOut, Settings, Users } from 'lucide-react';
+import {
+  LayoutDashboard,
+  LogOut,
+  Settings,
+  UserCircle,
+  Users,
+} from 'lucide-react';
 import { Link, useRouter } from '@tanstack/react-router';
 import SidebarItem from './sidebar-item';
 import { useAuthStore } from '@/store/authStore';
@@ -35,7 +41,9 @@ export function Sidebar({ className = '' }: { className?: string }) {
           <SidebarItem icon={Users}>
             <Link to="/contacts">Contacts</Link>
           </SidebarItem>
-          <SidebarItem icon={Settings}>Settings</SidebarItem>
+          <SidebarItem icon={UserCircle}>
+            <Link to="/profile">Profile</Link>
+          </SidebarItem>
         </nav>
         <div>
           <SidebarItem icon={LogOut} onClick={handleLogout}>

@@ -1,12 +1,33 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  Link,
+  redirect,
+  useRouter,
+} from '@tanstack/react-router';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { getPersistedToken } from '#/store/authStore';
+import { useEffect } from 'react';
 
-export const Route = createFileRoute('/')({ component: Home });
+export const Route = createFileRoute('/')({
+  component: Home,
+});
 
 function Home() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = getPersistedToken();
+    if (token) {
+      router.navigate({
+        to: '/dashboard',
+        replace: true,
+      });
+    }
+  }, []);
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="pointer-events-none absolute inset-0 overflow-hidden">

@@ -17,10 +17,12 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    private static final String ERROR_BAD_REQUEST = "Bad Request";
+
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<ErrorResponse> handleBadRequestException(BadRequestException ex, WebRequest request) {
         log.warn("Bad request: {}", ex.getMessage());
-        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", ex.getMessage(), request.getDescription(false), LocalDateTime.now());
+        ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(),ERROR_BAD_REQUEST, ex.getMessage(), request.getDescription(false), LocalDateTime.now());
         return ResponseEntity.badRequest().body(errorResponse);
     }
 
@@ -34,7 +36,7 @@ public class GlobalExceptionHandler {
         log.warn("Validation failed: {}", errors);
         return ResponseEntity.badRequest().body(Map.of(
                 "status", HttpStatus.BAD_REQUEST.value(),
-                "error", "Bad Request",
+                "error", ERROR_BAD_REQUEST,
                 "message", "Please enter valid values",
                 "fieldErrors", errors,
                 "path", request.getDescription(false),
@@ -56,7 +58,7 @@ public class GlobalExceptionHandler {
         );
 
         log.warn("Type mismatch: {}", errorMessage);
-        return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), "Bad Request", errorMessage, request.getDescription(false), LocalDateTime.now()));
+        return ResponseEntity.badRequest().body(new ErrorResponse(HttpStatus.BAD_REQUEST.value(), ERROR_BAD_REQUEST, errorMessage, request.getDescription(false), LocalDateTime.now()));
     }
 
     @ExceptionHandler(UnauthorizedException.class)

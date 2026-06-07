@@ -100,7 +100,7 @@ public class AuthService {
 
         if (!passwordEncoder.matches(request.getOldPassword(), user.getPassword())) {
             log.warn("Password change failed: incorrect old password for user {}", user.getId());
-            throw new UnauthorizedException("Incorrect current password");
+            throw new BadRequestException("Incorrect current password");
         }
 
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));

@@ -1,12 +1,11 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Card, CardContent } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { Card, CardContent } from '@/components/ui/card'
+import { useAuthStore } from '@/store/authStore'
 
 export function ProfileCard() {
-  const user = {
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john@xyz.com',
-  };
+  const user = useAuthStore((state) => state.user)
+
+  if (!user) return null
 
   return (
     <Card className="rounded-[2rem] border-border/60">
@@ -17,16 +16,14 @@ export function ProfileCard() {
               {user.firstName[0]}
             </AvatarFallback>
           </Avatar>
-
           <div>
             <h2 className="text-2xl font-bold">
               {user.firstName} {user.lastName}
             </h2>
-
             <p className="mt-1 text-muted-foreground">{user.email}</p>
           </div>
         </div>
       </CardContent>
     </Card>
-  );
+  )
 }

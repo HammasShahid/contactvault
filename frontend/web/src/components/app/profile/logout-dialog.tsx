@@ -1,7 +1,6 @@
 import { LogOut } from 'lucide-react';
-
+import { useRouter } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-
 import {
   AlertDialog,
   AlertDialogContent,
@@ -13,10 +12,15 @@ import {
   AlertDialogCancel,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { useAuthStore } from '@/store/authStore';
 
 export function LogoutDialog() {
+  const router = useRouter();
+  const clearAuth = useAuthStore((state) => state.clearAuth);
+
   const handleLogout = () => {
-    console.log('logout');
+    clearAuth();
+    router.navigate({ to: '/auth' });
   };
 
   return (
@@ -27,19 +31,15 @@ export function LogoutDialog() {
           Logout
         </Button>
       </AlertDialogTrigger>
-
       <AlertDialogContent className="rounded-3xl">
         <AlertDialogHeader>
           <AlertDialogTitle>Logout?</AlertDialogTitle>
-
           <AlertDialogDescription>
             You will need to login again to access your account.
           </AlertDialogDescription>
         </AlertDialogHeader>
-
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-
           <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
